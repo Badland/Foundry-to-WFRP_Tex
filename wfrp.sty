@@ -1,0 +1,74 @@
+% WFRPTeX---LaTeX package for producing WFRP content
+% Copyright (C) 2018--2019 Ian Knight
+%
+% This program is free software: you can redistribute it and/or modify
+% it under the terms of the GNU General Public License as published by
+% the Free Software Foundation, either version 3 of the License, or
+% (at your option) any later version.
+%
+% This program is distributed in the hope that it will be useful,
+% but WITHOUT ANY WARRANTY; without even the implied warranty of
+% MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+% GNU General Public License for more details.
+%
+% You should have received a copy of the GNU General Public License
+% along with this program.  If not, see <https://www.gnu.org/licenses/>.
+
+\NeedsTeXFormat{LaTeX2e}
+\ProvidesPackage{wfrp}[2018/10/14 Package providing environments useful for WFRP documents]
+
+\RequirePackage{array}
+\RequirePackage{booktabs}
+\RequirePackage{etoolbox}
+\RequirePackage[pdfborder={0 0 0}]{hyperref}
+\RequirePackage{mdframed}
+\RequirePackage{xcolor}
+
+
+\newenvironment{callout}
+    {\begin{mdframed}[innerleftmargin=0.25cm,usetwoside=false,hidealllines=true] \itshape}
+    {\end{mdframed}}
+
+\newenvironment{gmnote}[1]
+    {\begin{mdframed}[backgroundcolor=lightgray,innertopmargin=0.5cm,innerbottommargin=0.5cm,
+                        innerleftmargin=0.5cm,innerrightmargin=0.5cm,usetwoside=false]
+        {\centering \fontsize{14pt}{16.8pt}\selectfont \uppercase{#1} \par}
+    }
+    {\end{mdframed}}
+
+
+\newcommand{\statblock}[9][ht]{
+    \begin{figure}[#1]
+    \raggedright
+    \rule{\columnwidth}{2pt}
+
+    {\bfseries \scshape \fontsize{10.5pt}{10.5pt}\selectfont #2}
+    \vspace{0.125cm}
+
+    {\setlength\tabcolsep{4.8pt}\fontsize{6.5pt}{6.5pt}\selectfont
+        \begin{tabular*}{\columnwidth}{cccccccccccc}\toprule
+        \textbf{M} & \textbf{WS} & \textbf{BS} & \textbf{S} & \textbf{T} &
+            \textbf{I} & \textbf{Ag} & \textbf{Dex} & \textbf{Int} & \textbf{WP} &
+            \textbf{Fel} & \textbf{W} \\ \midrule
+        #3
+        \\ \bottomrule
+        \end{tabular*}
+    }
+
+    \ifblank{#4}{}{\textbf{Abilities:}~#4}
+
+    \ifblank{#5}{}{\textbf{Skills:}~#5}
+
+    \ifblank{#6}{}{\textbf{Talents:}~#6}
+
+    \ifblank{#7}{}{\textbf{Spells:}~#7}
+
+    \ifblank{#8}{}{\textbf{Blessings \& miracles:}~#8}
+
+    \ifblank{#9}{}{\textbf{Trappings:}~#9}
+        
+    \rule{\columnwidth}{2pt}
+    \end{figure}
+}
+
+\newcommand{\WFRPTeX}{WFRP\TeX{}}
