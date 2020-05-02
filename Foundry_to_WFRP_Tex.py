@@ -1,4 +1,5 @@
 
+
 import json
 import csv
 import os
@@ -59,7 +60,10 @@ def choose_latex_directory() :
 #count entities in the queue
 count_queue = 0
 for entity in os.listdir(queue_folder):
-    count_queue += 1
+    if '.gitignore' in entity:
+        print('gitignore was not counted')
+    else:
+        count_queue += 1
 
 #Let user chose whether to:
 # inport NPCs as a batch in one folder (batch_or_manual = 0)
@@ -101,162 +105,166 @@ def clean_text(x) :
 #looping over the files in the queue folder
 
 for filename in os.listdir( queue_folder):
-#define wrinting destination for the iterated file if batch writing is disabled
-    if int(batch_or_manual) == 1:
-        writing_destination = choose_latex_directory()
-#define a bunch of variables and lists that will be used inside of the loop for each actor
-    name = filename
-    skills = []
-    score = []
-    scoreinit = []
-    scoreadv = []
-    scoretot = []
-    comp = []
-    values = []
-    listskills = []
-    listtalents = []
-    listspells = []
-    listprayers = []
-    listtrappings = []
-    listtraits = []
-    check = 0
+#ignore .gitignore
+    if '.gitignore' in filename:
+        print('.gitignored ignored')
+    else:
+    #define wrinting destination for the iterated file if batch writing is disabled
+        if int(batch_or_manual) == 1:
+            writing_destination = choose_latex_directory()
+    #define a bunch of variables and lists that will be used inside of the loop for each actor
+        name = filename
+        skills = []
+        score = []
+        scoreinit = []
+        scoreadv = []
+        scoretot = []
+        comp = []
+        values = []
+        listskills = []
+        listtalents = []
+        listspells = []
+        listprayers = []
+        listtrappings = []
+        listtraits = []
+        check = 0
 
-#open the actor json, utf8 encoding is resquired to read ligatures properly
-    queued_item_path = queue_folder + filename
-    with open( queued_item_path, 'r', encoding='utf-8' ) as json_file:
-        pysheet = json.load( json_file )
+    #open the actor json, utf8 encoding is resquired to read ligatures properly
+        queued_item_path = queue_folder + filename
+        with open( queued_item_path, 'r', encoding='utf-8' ) as json_file:
+            pysheet = json.load( json_file )
 
-#find all data relative to the statblock of the NPC
-    for key, value in pysheet['data']['characteristics'].items():
-        scoreinit.append( value['initial'] )
-        scoreadv.append( value['advances'] )
-        scoretot.append( value['value'] )
+    #find all data relative to the statblock of the NPC
+        for key, value in pysheet['data']['characteristics'].items():
+            scoreinit.append( value['initial'] )
+            scoreadv.append( value['advances'] )
+            scoretot.append( value['value'] )
 
-    moveinit = pysheet['data']['details']['move']['value']
-    movetot = pysheet['data']['details']['move']['value']
-    woundstot = pysheet['data']['status']['wounds']['value']
+        moveinit = pysheet['data']['details']['move']['value']
+        movetot = pysheet['data']['details']['move']['value']
+        woundstot = pysheet['data']['status']['wounds']['value']
 
-    scoreinit.insert( 0, moveinit )
-    scoretot.insert(0, movetot)
-    scoretot.append( woundstot )
+        scoreinit.insert( 0, moveinit )
+        scoretot.insert(0, movetot)
+        scoretot.append( woundstot )
 
-#define function needed to remove ligature and unwanted html
-
-
-#loop over all item to stock the ones we need in corresponding lists
-#Talents and skills are added only if they have advances
-#traits takes in account the value  associated when there is one (i.e.Poison (5))
-
-
-    for a in pysheet['items']:
-
-        if a['type'] == 'skill' and a['data']['advances']['value'] > 0:
-            tested = a['data']['characteristic']['value']
-            test = pysheet['data']['characteristics'][str( tested )]['value'] + a['data']['advances']['value']
-            skilltest = ' ' + a['name'] + '~' + str( test )
-            listskills.append( skilltest )
-
-        if a['type'] == 'talent' and a['data']['advances']['value'] > 0:
-            tal = ' ' + a['name'] + '~' + str( a['data']['advances']['value'] )
-            listtalents.append( tal )
-
-        if a['type'] == 'trait':
-
-            traitdesc = a['data']['description']['value']
-            traitdesc = clean_text(traitdesc)
+    #define function needed to remove ligature and unwanted html
 
 
-            if a['data']['specification']['value'] == '':
-                tr = a['name']
-                tr = clean_text( tr )
-                tr = '\\textbf{'+tr+'}~:~'+traitdesc+'\\\\'
-            else:
-                tr = '\\textbf{'+a['name'] +' '+str( a['data']['specification']['value'] )+'}~:~'+traitdesc+'\\\\'
-                tr = clean_text( tr )
+    #loop over all item to stock the ones we need in corresponding lists
+    #Talents and skills are added only if they have advances
+    #traits takes in account the value  associated when there is one (i.e.Poison (5))
 
 
-           
-            listtraits.append( tr )
+        for a in pysheet['items']:
 
-        if a['type'] == 'spell':
-            spelldesc = a['data']['description']['value']
-            spelldesc = spelldesc
+            if a['type'] == 'skill' and a['data']['advances']['value'] > 0:
+                tested = a['data']['characteristic']['value']
+                test = pysheet['data']['characteristics'][str( tested )]['value'] + a['data']['advances']['value']
+                skilltest = ' ' + a['name'] + '~' + str( test )
+                listskills.append( skilltest )
 
-            spel = '\\textbf{'+a['name']+'}' + ' (' + str( a['data']['range']['value'] ) + ',' + str(
-                a['data']['duration']['value'] ) + ',' + str( a['data']['target']['value'] ) + ')' + '~:~' + spelldesc+'\\\\'
+            if a['type'] == 'talent' and a['data']['advances']['value'] > 0:
+                tal = ' ' + a['name'] + '~' + str( a['data']['advances']['value'] )
+                listtalents.append( tal )
 
-            spel = clean_text(spel)
-            listspells.append( spel )
+            if a['type'] == 'trait':
 
-            print(type(listspells))
+                traitdesc = a['data']['description']['value']
+                traitdesc = clean_text(traitdesc)
+
+
+                if a['data']['specification']['value'] == '':
+                    tr = a['name']
+                    tr = clean_text( tr )
+                    tr = '\\textbf{'+tr+'}~:~'+traitdesc+'\\\\'
+                else:
+                    tr = '\\textbf{'+a['name'] +' '+str( a['data']['specification']['value'] )+'}~:~'+traitdesc+'\\\\'
+                    tr = clean_text( tr )
 
 
 
-        if a['type'] == 'prayer':
-            prayerdesc = a['data']['description']['value']
-            prayerdesc = prayerdesc
-            pray = '\\textbf{'+a['name']+'}' + ' (' + str( a['data']['range']['value'] ) + ',' + str(
-                a['data']['duration']['value'] ) + ',' + str( a['data']['target']['value'] ) + ')' + '~:~' + prayerdesc+'\\\\'
-            pray = clean_text(pray)
-            listprayers.append( pray )
+                listtraits.append( tr )
+
+            if a['type'] == 'spell':
+                spelldesc = a['data']['description']['value']
+                spelldesc = spelldesc
+
+                spel = '\\textbf{'+a['name']+'}' + ' (' + str( a['data']['range']['value'] ) + ',' + str(
+                    a['data']['duration']['value'] ) + ',' + str( a['data']['target']['value'] ) + ')' + '~:~' + spelldesc+'\\\\'
+
+                spel = clean_text(spel)
+                listspells.append( spel )
+
+                print(type(listspells))
 
 
-        if a['type'] == 'trapping' or a['type'] == 'weapon':
-            trap = a['name']
-            listtrappings.append( trap )
 
-    print( listskills )
-    print( listtalents )
-    print( listtraits )
-    print( scoretot)
-    print( listspells )
+            if a['type'] == 'prayer':
+                prayerdesc = a['data']['description']['value']
+                prayerdesc = prayerdesc
+                pray = '\\textbf{'+a['name']+'}' + ' (' + str( a['data']['range']['value'] ) + ',' + str(
+                    a['data']['duration']['value'] ) + ',' + str( a['data']['target']['value'] ) + ')' + '~:~' + prayerdesc+'\\\\'
+                pray = clean_text(pray)
+                listprayers.append( pray )
 
-#write latex file
 
-#change name from extracted file to keep only the name chosen for the NPC
-#i.e; : fvtt-Actor-Karl_Franz.json --> karl_Franz
+            if a['type'] == 'trapping' or a['type'] == 'weapon':
+                trap = a['name']
+                listtrappings.append( trap )
 
-    cleanname = name.replace('fvtt-Actor-','')
-    cleanname = cleanname.replace('.json','')
-    cleanername = cleanname.replace('_',' ')
+        print( listskills )
+        print( listtalents )
+        print( listtraits )
+        print( scoretot)
+        print( listspells )
 
-#write on the latex
-    with open( latex_folder + writing_destination +  cleanname + '.tex', 'w', newline='' ) as myfile:
+    #write latex file
 
-        myfile.write('\statblock[h!]{' + cleanername + '}')
-        myfile.write('\n' + '{')
-        wr1 = csv.writer( myfile, quoting=csv.QUOTE_MINIMAL, delimiter='&' )
-        wr1.writerow(scoretot)
-        myfile.write( '}' )
+    #change name from extracted file to keep only the name chosen for the NPC
+    #i.e; : fvtt-Actor-Karl_Franz.json --> karl_Franz
 
-        wr3 = csv.writer( myfile, quoting=csv.QUOTE_MINIMAL, delimiter='\n', quotechar= " ")
-        wr2 = csv.writer( myfile, quoting=csv.QUOTE_MINIMAL )
-        myfile.write( '\n' + '{' )
-        wr3.writerow( listtraits )
-        myfile.write( '}' )
-        myfile.write( '\n' + '{' )
-        wr2.writerow( listskills )
-        myfile.write( '}' )
-        myfile.write( '\n' + '{' )
-        wr2.writerow( listtalents )
-        myfile.write( '}' )
-        myfile.write( '\n' + '{' )
-        wr3.writerow( listspells )
-        myfile.write( '}' )
-        myfile.write( '\n' + '{' )
-        wr3.writerow( listprayers )
-        myfile.write( '}' )
-        myfile.write( '\n' + '{' )
-        wr2.writerow( listtrappings )
-        myfile.write( '}' )
+        cleanname = name.replace('fvtt-Actor-','')
+        cleanname = cleanname.replace('.json','')
+        cleanername = cleanname.replace('_',' ')
 
-#write name of tex file on the main NPC text file
-    with open( latex_folder+writing_destination+'\\NPCs.tex', 'a', newline='' ) as myfile2:
-     myfile2.write('\\input{'+cleanname+'}')
+    #write on the latex
+        with open( latex_folder + writing_destination +  cleanname + '.tex', 'w', newline='' ) as myfile:
 
-#move the treated file from queue to archive
-    archive_path = archive_folder + filename
-    shutil.move(queued_item_path,archive_path)
+            myfile.write('\statblock[h!]{' + cleanername + '}')
+            myfile.write('\n' + '{')
+            wr1 = csv.writer( myfile, quoting=csv.QUOTE_MINIMAL, delimiter='&' )
+            wr1.writerow(scoretot)
+            myfile.write( '}' )
+
+            wr3 = csv.writer( myfile, quoting=csv.QUOTE_MINIMAL, delimiter='\n', quotechar= " ")
+            wr2 = csv.writer( myfile, quoting=csv.QUOTE_MINIMAL )
+            myfile.write( '\n' + '{' )
+            wr3.writerow( listtraits )
+            myfile.write( '}' )
+            myfile.write( '\n' + '{' )
+            wr2.writerow( listskills )
+            myfile.write( '}' )
+            myfile.write( '\n' + '{' )
+            wr2.writerow( listtalents )
+            myfile.write( '}' )
+            myfile.write( '\n' + '{' )
+            wr3.writerow( listspells )
+            myfile.write( '}' )
+            myfile.write( '\n' + '{' )
+            wr3.writerow( listprayers )
+            myfile.write( '}' )
+            myfile.write( '\n' + '{' )
+            wr2.writerow( listtrappings )
+            myfile.write( '}' )
+
+    #write name of tex file on the main NPC text file
+        with open( latex_folder+writing_destination+'\\NPCs.tex', 'a', newline='' ) as myfile2:
+         myfile2.write('\\input{'+cleanname+'}')
+
+    #move the treated file from queue to archive
+        archive_path = archive_folder + filename
+        shutil.move(queued_item_path,archive_path)
 
 
 
